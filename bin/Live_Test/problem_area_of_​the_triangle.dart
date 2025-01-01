@@ -9,7 +9,7 @@ main() {
   double height = double.parse(stdin.readLineSync()!);
 
   // Calculate the area of the triangle
-  double area = 0.5*base*height;
+  double area = 0.5 * base* height;
 
   // Print the area of the triangle
   print('The area of the triangle is: $area');
