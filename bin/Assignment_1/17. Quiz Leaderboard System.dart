@@ -1,58 +1,50 @@
 class Player {
-  final int id;
-  final String name;
+  int id;
+  String name;
   int score;
 
-  Player({
-    required this.id,
-    required this.name,
-    this.score = 0,
-  });
+  Player(this.id, this.name, this.score);
 }
 
 class Leaderboard {
-  List<Player> _players = [];
+  List<Player> players = [];
 
   void addPlayer(Player player) {
-    _players.add(player);
-    _sortLeaderboard();
+    players.add(player);
   }
 
-  void updatePlayerScore(int playerId, int newScore) {
-    _players.firstWhere((player) => player.id == playerId).score = newScore;
-    _sortLeaderboard();
+  void updatePlayerScore(int id, int newScore) {
+    Player player = players.firstWhere((player) => player.id == id, orElse: () => throw Exception('Player not found'));
+    player.score = newScore;
   }
 
-  List<Player> getTopPlayers(int count) {
-    return _players.sublist(0, count);
-  }
-
-  void _sortLeaderboard() {
-    _players.sort((a, b) => b.score.compareTo(a.score)); // Sort in descending order
+  void displayTopPlayers(int topN) {
+    players.sort((a, b) => b.score.compareTo(a.score));
+    for (int i = 0; i < topN && i < players.length; i++) {
+      print('ID: ${players[i].id}, Name: ${players[i].name}, Score: ${players[i].score}');
+    }
   }
 }
 
-// Example usage
 void main() {
-  // Create sample players
-  Player player1 = Player(id: 1, name: 'Alice', score: 100);
-  Player player2 = Player(id: 2, name: 'Bob', score: 80);
-  Player player3 = Player(id: 3, name: 'Charlie', score: 90);
+  try {
+    Leaderboard leaderboard = Leaderboard();
 
-  // Create a Leaderboard instance
-  Leaderboard leaderboard = Leaderboard();
+    Player player1 = Player(1, 'Apurbo', 95);
+    Player player2 = Player(2, 'Adiba', 85);
+    Player player3 = Player(3, 'Rohit', 90);
+    Player player4 = Player(4, 'Manilk', 80);
 
-  // Add players to the leaderboard
-  leaderboard.addPlayer(player1);
-  leaderboard.addPlayer(player2);
-  leaderboard.addPlayer(player3);
+    leaderboard.addPlayer(player1);
+    leaderboard.addPlayer(player2);
+    leaderboard.addPlayer(player3);
+    leaderboard.addPlayer(player4);
 
-  // Update player score
-  leaderboard.updatePlayerScore(2, 95); // Update Bob's score
+    leaderboard.updatePlayerScore(2, 92);
 
-  // Get and print top 3 players
-  List<Player> topPlayers = leaderboard.getTopPlayers(3);
-  for (var player in topPlayers) {
-    print('${player.name}: ${player.score}');
+    print('Top 3 Players:');
+    leaderboard.displayTopPlayers(3);
+  } catch (e) {
+    print('Error: $e');
   }
 }

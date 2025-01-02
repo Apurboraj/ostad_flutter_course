@@ -1,71 +1,76 @@
 import 'dart:async';
 
 class Device {
-  final int id;
-  final String name;
-  bool isOn;
+  int id;
+  String name;
+  bool status; // true for On, false for Off
 
-  Device({
-    required this.id,
-    required this.name,
-    this.isOn = false,
-  });
-
-  void toggle() {
-    isOn = !isOn;
-  }
+  Device(this.id, this.name, this.status);
 }
 
 class SmartHome {
-  final List<Device> _devices = [];
+  List<Device> devices = [];
 
   void addDevice(Device device) {
-    _devices.add(device);
+    devices.add(device);
   }
 
-  Future<void> updateDeviceStatus(int deviceId, bool isOn) async {
-    // Simulate fetching and updating device status
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-    _devices.firstWhere((device) => device.id == deviceId).isOn = isOn;
+  void turnDeviceOn(int id) {
+    Device device = devices.firstWhere((device) => device.id == id, orElse: () => throw Exception('Device not found'));
+    device.status = true;
+    print('${device.name} is now On.');
   }
 
-  void listDevices() {
-    print('Devices:');
-    for (var device in _devices) {
-      print('${device.id}: ${device.name} - ${device.isOn ? 'On' : 'Off'}');
-    }
+  void turnDeviceOff(int id) {
+    Device device = devices.firstWhere((device) => device.id == id, orElse: () => throw Exception('Device not found'));
+    device.status = false;
+    print('${device.name} is now Off.');
   }
 
-  List<Device> filterDevicesByStatus(bool status) {
-    return _devices.where((device) => device.isOn == status).toList();
+  void listAllDevices() {
+    devices.forEach((device) {
+      print('ID: ${device.id}, Name: ${device.name}, Status: ${device.status ? 'On' : 'Off'}');
+    });
+  }
+
+  void filterDevicesByStatus(bool status) {
+    devices.where((device) => device.status == status).forEach((device) {
+      print('ID: ${device.id}, Name: ${device.name}, Status: ${device.status ? 'On' : 'Off'}');
+    });
   }
 }
 
-// Example usage
+Future<void> fetchDeviceData() async {
+  print('Fetching device data...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate fetching data
+  print('Device data fetched.');
+}
+
 void main() async {
-  // Create sample devices
-  Device light = Device(id: 1, name: 'Light');
-  Device fan = Device(id: 2, name: 'Fan');
-  Device tv = Device(id: 3, name: 'TV');
+  try {
+    SmartHome smartHome = SmartHome();
 
-  // Create a SmartHome instance
-  SmartHome home = SmartHome();
+    Device device1 = Device(1, 'Light', false);
+    Device device2 = Device(2, 'Fan', true);
+    Device device3 = Device(3, 'Heater', false);
 
-  // Add devices to the SmartHome
-  home.addDevice(light);
-  home.addDevice(fan);
-  home.addDevice(tv);
+    smartHome.addDevice(device1);
+    smartHome.addDevice(device2);
+    smartHome.addDevice(device3);
 
-  // Turn on the light
-  await home.updateDeviceStatus(1, true);
+    await fetchDeviceData();
 
-  // List all devices
-  home.listDevices();
+    smartHome.listAllDevices();
 
-  // List on devices
-  List<Device> onDevices = home.filterDevicesByStatus(true);
-  print('On Devices:');
-  for (var device in onDevices) {
-    print('${device.id}: ${device.name}');
+    smartHome.turnDeviceOn(1);
+    smartHome.turnDeviceOff(2);
+
+    print('Devices that are On:');
+    smartHome.filterDevicesByStatus(true);
+
+    print('Devices that are Off:');
+    smartHome.filterDevicesByStatus(false);
+  } catch (e) {
+    print('Error: $e');
   }
 }

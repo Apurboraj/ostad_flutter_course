@@ -34,9 +34,9 @@ class QuizGame {
       ),
       Question(
         id: 2,
-        questionText: 'What is 2 + 2?',
-        options: ['3', '4', '5', '6'],
-        correctAnswer: '4',
+        questionText: 'What is 5 * 2?',
+        options: ['8', '10', '15', '20'],
+        correctAnswer: '10',
       ),
       Question(
         id: 3,

@@ -1,96 +1,61 @@
-// Define the Student class
 class Student {
-  final int id;
-  final String name;
-  final Map<String, double> marks; // Map of subjects to scores
+  int id;
+  String name;
+  Map<String, double> marks;
 
-  Student({required this.id, required this.name, required this.marks});
+  Student(this.id, this.name, this.marks);
+}
 
-  double calculateAverage() {
-    if (marks.isEmpty) return 0.0;
-    final total = marks.values.reduce((a, b) => a + b);
-    return total / marks.length;
+class GradingSystem {
+  List<Student> students = [];
+
+  void addStudent(Student student) {
+    students.add(student);
   }
 
-  String assignGrade() {
-    final average = calculateAverage();
-    if (average >= 90) {
+  double calculateAverageMarks(Student student) {
+    double totalMarks = student.marks.values.fold(0.0, (sum, mark) => sum + mark);
+    return totalMarks / student.marks.length;
+  }
+
+  String assignGrade(double averageMarks) {
+    if (averageMarks >= 90) {
       return 'A';
-    } else if (average >= 80) {
+    } else if (averageMarks >= 80) {
       return 'B';
-    } else if (average >= 70) {
+    } else if (averageMarks >= 70) {
       return 'C';
-    } else if (average >= 60) {
+    } else if (averageMarks >= 60) {
       return 'D';
     } else {
       return 'F';
     }
   }
 
-  @override
-  String toString() {
-    final average = calculateAverage();
-    final grade = assignGrade();
-    return '$name (ID: $id) - Average: ${average.toStringAsFixed(2)}, Grade: $grade';
-  }
-}
-
-// Define the GradingSystem class
-class GradingSystem {
-  final List<Student> _students = [];
-
-  void addStudent(Student student) {
-    try {
-      for (var score in student.marks.values) {
-        if (score < 0 || score > 100) {
-          throw Exception('Invalid marks for student ${student.name}: $score');
-        }
-      }
-      _students.add(student);
-      print('Added student: ${student.name}');
-    } catch (e) {
-      print(e);
-    }
-  }
-
   void listStudentsWithGrades() {
-    if (_students.isEmpty) {
-      print('No students available.');
-      return;
-    }
-    print('Students and Grades (Descending Order):');
-    final sortedStudents = _students..sort((a, b) => b.calculateAverage().compareTo(a.calculateAverage()));
-    for (var student in sortedStudents) {
-      print(student);
-    }
+    students.sort((a, b) => calculateAverageMarks(b).compareTo(calculateAverageMarks(a)));
+    students.forEach((student) {
+      double averageMarks = calculateAverageMarks(student);
+      String grade = assignGrade(averageMarks);
+      print('ID: ${student.id}, Name: ${student.name}, Average Marks: ${averageMarks.toStringAsFixed(2)}, Grade: $grade');
+    });
   }
 }
 
 void main() {
-  final gradingSystem = GradingSystem();
+  try {
+    GradingSystem gradingSystem = GradingSystem();
 
-  // Adding students
-  gradingSystem.addStudent(Student(
-    id: 1,
-    name: 'Alice',
-    marks: {'Math': 95, 'Science': 88, 'English': 92},
-  ));
-  gradingSystem.addStudent(Student(
-    id: 2,
-    name: 'Bob',
-    marks: {'Math': 78, 'Science': 84, 'English': 73},
-  ));
-  gradingSystem.addStudent(Student(
-    id: 3,
-    name: 'Charlie',
-    marks: {'Math': 60, 'Science': 55, 'English': 58},
-  ));
-  gradingSystem.addStudent(Student(
-    id: 4,
-    name: 'Invalid Marks',
-    marks: {'Math': 110, 'Science': 50},
-  )); // Invalid marks example
+    Student student1 = Student(1, 'Apurbo', {'Math': 95, 'Science': 90, 'English': 85});
+    Student student2 = Student(2, 'Apon', {'Math': 75, 'Science': 80, 'English': 70});
+    Student student3 = Student(3, 'Avilash', {'Math': 65, 'Science': 60, 'English': 55});
 
-  // List students with grades
-  gradingSystem.listStudentsWithGrades();
+    gradingSystem.addStudent(student1);
+    gradingSystem.addStudent(student2);
+    gradingSystem.addStudent(student3);
+
+    gradingSystem.listStudentsWithGrades();
+  } catch (e) {
+    print('Error: $e');
+  }
 }

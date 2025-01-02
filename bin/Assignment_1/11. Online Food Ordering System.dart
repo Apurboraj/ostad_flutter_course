@@ -1,81 +1,69 @@
 import 'dart:async';
 
-class AMenuItem {
-  final int id;
-  final String name;
-  final double price;
+class MenuItem {
+  int id;
+  String name;
+  double price;
   bool isAvailable;
 
-  AMenuItem({
-    required this.id,
-    required this.name,
-    required this.price,
-    this.isAvailable = true,
-  });
+  MenuItem(this.id, this.name, this.price, this.isAvailable);
 }
 
 class Order {
-  final Set<AMenuItem> _orderedItems = {};
+  Set<MenuItem> orderedItems = {};
 
-  void addItem(AMenuItem item) {
-    try {
-      if (item.isAvailable) {
-        _orderedItems.add(item);
-      } else {
-        throw Exception('Item ${item.name} is not available.');
-      }
-    } catch (e) {
-      print('Error adding item: $e');
+  void addMenuItem(MenuItem item) {
+    if (item.isAvailable) {
+      orderedItems.add(item);
+      print('${item.name} added to the order.');
+    } else {
+      throw Exception('${item.name} is not available.');
     }
   }
 
-  void removeItem(AMenuItem item) {
-    _orderedItems.remove(item);
+  void removeMenuItem(MenuItem item) {
+    if (orderedItems.contains(item)) {
+      orderedItems.remove(item);
+      print('${item.name} removed from the order.');
+    } else {
+      throw Exception('${item.name} is not in the order.');
+    }
   }
 
   void displayOrderSummary() {
+    double totalPrice = orderedItems.fold(0.0, (sum, item) => sum + item.price);
     print('Order Summary:');
-    double totalPrice = 0;
-    for (var item in _orderedItems) {
-      print('${item.name} - \$${item.price.toStringAsFixed(2)}');
-      totalPrice += item.price;
-    }
+    orderedItems.forEach((item) {
+      print('Item: ${item.name}, Price: \$${item.price}');
+    });
     print('Total Price: \$${totalPrice.toStringAsFixed(2)}');
-  }
-
-  Future<void> processOrder() async {
-    print('Processing order...');
-    await Future.delayed(Duration(seconds: 2)); // Simulate order processing
-    print('Order processed successfully!');
   }
 }
 
-// Example usage
-void main() {
-  // Create sample menu items
-  AMenuItem burger = AMenuItem(id: 1, name: 'Burger', price: 10.0);
-  AMenuItem fries = AMenuItem(id: 2, name: 'Fries', price: 3.0);
-  AMenuItem soda = AMenuItem(id: 3, name: 'Soda', price: 2.0);
-  AMenuItem unavailableItem = AMenuItem(
-      id: 4, name: 'Special', price: 5.0, isAvailable: false);
+Future<void> processOrder(Order order) async {
+  print('Processing order...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate order processing delay
+  print('Order processed successfully.');
+}
 
-  // Create an order
-  Order order = Order();
+void main() async {
+  try {
+    MenuItem item1 = MenuItem(1, 'Burger', 5.99, true);
+    MenuItem item2 = MenuItem(2, 'Pizza', 8.99, false);
+    MenuItem item3 = MenuItem(3, 'Salad', 4.99, true);
 
-  // Add items to the order
-  order.addItem(burger);
-  order.addItem(fries);
-  order.addItem(soda);
+    Order order = Order();
 
-  // Attempt to add an unavailable item
-  order.addItem(unavailableItem);
+    order.addMenuItem(item1);
+    order.addMenuItem(item3);
 
-  // Remove an item from the order
-  order.removeItem(fries);
+    await processOrder(order);
 
-  // Display order summary
-  order.displayOrderSummary();
+    order.displayOrderSummary();
 
-  // Process the order
-  order.processOrder();
+    order.removeMenuItem(item1);
+    order.displayOrderSummary();
+  } catch (e) {
+    print('Error: $e');
+  }
 }

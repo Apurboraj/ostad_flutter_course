@@ -1,130 +1,86 @@
 import 'dart:async';
 
-// Base class for a Bank Account
 class BankAccount {
-  String accountNumber;
+  int accountNumber;
   String accountHolderName;
   double balance;
 
-  BankAccount({
-    required this.accountNumber,
-    required this.accountHolderName,
-    required this.balance,
-  });
+  BankAccount(this.accountNumber, this.accountHolderName, this.balance);
 
-  void deposit(double amount) async {
-    if (amount <= 0) {
-      print("Deposit amount must be greater than zero.");
-      return;
-    }
-    print("Processing deposit of \$${amount.toStringAsFixed(2)}...");
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+  void deposit(double amount) {
     balance += amount;
-    print("Deposit successful! New balance: \$${balance.toStringAsFixed(2)}\n");
+    print('Deposit successful. New balance: \$${balance.toStringAsFixed(2)}');
   }
 
-  void withdraw(double amount) async {
-    if (amount <= 0) {
-      print("Withdrawal amount must be greater than zero.");
-      return;
-    }
-    try {
-      if (amount > balance) {
-        throw Exception("Insufficient balance.");
-      }
-      print("Processing withdrawal of \$${amount.toStringAsFixed(2)}...");
-      await Future.delayed(Duration(seconds: 2)); // Simulate delay
+  void withdraw(double amount) {
+    if (amount > balance) {
+      throw Exception('Insufficient balance');
+    } else {
       balance -= amount;
-      print("Withdrawal successful! New balance: \$${balance.toStringAsFixed(2)}\n");
-    } catch (e) {
-      print("Error: ${e.toString()}\n");
+      print('Withdrawal successful. New balance: \$${balance.toStringAsFixed(2)}');
     }
   }
 
   void checkBalance() {
-    print("Account Balance: \$${balance.toStringAsFixed(2)}\n");
+    print('Current balance: \$${balance.toStringAsFixed(2)}');
   }
 }
 
-// SavingsAccount subclass with interest calculation
 class SavingsAccount extends BankAccount {
   double interestRate;
 
-  SavingsAccount({
-    required String accountNumber,
-    required String accountHolderName,
-    required double balance,
-    required this.interestRate,
-  }) : super(
-      accountNumber: accountNumber,
-      accountHolderName: accountHolderName,
-      balance: balance);
+  SavingsAccount(int accountNumber, String accountHolderName, double balance, this.interestRate)
+      : super(accountNumber, accountHolderName, balance);
 
   void addInterest() {
-    double interest = balance * (interestRate / 100);
+    double interest = balance * interestRate / 100;
     balance += interest;
-    print("Interest of \$${interest.toStringAsFixed(2)} added. New balance: \$${balance.toStringAsFixed(2)}\n");
+    print('Interest added. New balance: \$${balance.toStringAsFixed(2)}');
   }
 }
 
-// CurrentAccount subclass with overdraft limit
 class CurrentAccount extends BankAccount {
   double overdraftLimit;
 
-  CurrentAccount({
-    required String accountNumber,
-    required String accountHolderName,
-    required double balance,
-    required this.overdraftLimit,
-  }) : super(
-      accountNumber: accountNumber,
-      accountHolderName: accountHolderName,
-      balance: balance);
+  CurrentAccount(int accountNumber, String accountHolderName, double balance, this.overdraftLimit)
+      : super(accountNumber, accountHolderName, balance);
 
   @override
-  void withdraw(double amount) async {
-    if (amount <= 0) {
-      print("Withdrawal amount must be greater than zero.");
-      return;
-    }
-    try {
-      if (amount > balance + overdraftLimit) {
-        throw Exception("Exceeded overdraft limit.");
-      }
-      print("Processing withdrawal of \$${amount.toStringAsFixed(2)}...");
-      await Future.delayed(Duration(seconds: 2)); // Simulate delay
+  void withdraw(double amount) {
+    if (amount > balance + overdraftLimit) {
+      throw Exception('Overdraft limit exceeded');
+    } else {
       balance -= amount;
-      print("Withdrawal successful! New balance: \$${balance.toStringAsFixed(2)}\n");
-    } catch (e) {
-      print("Error: ${e.toString()}\n");
+      print('Withdrawal successful. New balance: \$${balance.toStringAsFixed(2)}');
     }
   }
 }
 
-void main() async {
-  // Create a Savings Account
-  var savings = SavingsAccount(
-    accountNumber: "SAV123",
-    accountHolderName: "Alice",
-    balance: 1000.0,
-    interestRate: 5.0,
-  );
+Future<void> simulateTransaction(BankAccount account, double amount, bool isDeposit) async {
+  print('Processing transaction...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate real-time transaction delay
+  if (isDeposit) {
+    account.deposit(amount);
+  } else {
+    account.withdraw(amount);
+  }
+}
 
-  savings.checkBalance();
-  savings.deposit(500);
-  await Future.delayed(Duration(seconds: 3)); // Wait for deposit
-  savings.addInterest();
+void main() {
+  try {
+    SavingsAccount savings = SavingsAccount(12345, 'John Doe', 1000.0, 5.0);
+    CurrentAccount current = CurrentAccount(67890, 'Jane Smith', 500.0, 200.0);
 
-  // Create a Current Account
-  var current = CurrentAccount(
-    accountNumber: "CUR456",
-    accountHolderName: "Bob",
-    balance: 200.0,
-    overdraftLimit: 300.0,
-  );
+    savings.checkBalance();
+    current.checkBalance();
 
-  current.checkBalance();
-  current.withdraw(400);
-  await Future.delayed(Duration(seconds: 3)); // Wait for withdrawal
-  current.withdraw(200);
+    simulateTransaction(savings, 200.0, true);
+    simulateTransaction(current, 100.0, false);
+
+    savings.addInterest();
+    savings.checkBalance();
+    current.checkBalance();
+  } catch (e) {
+    print('Error: $e');
+  }
 }

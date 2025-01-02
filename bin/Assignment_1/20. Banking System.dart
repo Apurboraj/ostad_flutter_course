@@ -1,91 +1,77 @@
 class Account {
-  final int id;
-  final String name;
+  int id;
+  String name;
   double balance;
 
-  Account({
-    required this.id,
-    required this.name,
-    this.balance = 0.0,
-  });
+  Account(this.id, this.name, this.balance);
 }
 
 class Bank {
-  Map<int, Account> _accounts = {};
-  int _nextAccountId = 1;
+  Map<int, Account> accounts = {};
 
-  Account createAccount(String name) {
-    Account account = Account(id: _nextAccountId++, name: name);
-    _accounts[account.id] = account;
-    return account;
-  }
-
-  void deposit(int accountId, double amount) {
-    try {
-      if (_accounts.containsKey(accountId)) {
-        _accounts[accountId]!.balance += amount;
-      } else {
-        throw Exception('Account with ID $accountId not found.');
-      }
-    } catch (e) {
-      print('Error depositing: $e');
+  void createAccount(Account account) {
+    if (accounts.containsKey(account.id)) {
+      throw Exception('Account with ID ${account.id} already exists.');
+    } else {
+      accounts[account.id] = account;
+      print('Account for ${account.name} created.');
     }
   }
 
-  void withdraw(int accountId, double amount) {
-    try {
-      if (_accounts.containsKey(accountId)) {
-        if (_accounts[accountId]!.balance >= amount) {
-          _accounts[accountId]!.balance -= amount;
-        } else {
-          throw Exception('Insufficient balance.');
-        }
-      } else {
-        throw Exception('Account with ID $accountId not found.');
-      }
-    } catch (e) {
-      print('Error withdrawing: $e');
+  void deposit(int id, double amount) {
+    if (accounts.containsKey(id)) {
+      accounts[id]!.balance += amount;
+      print('Deposited \$${amount.toStringAsFixed(2)} to account ID $id.');
+    } else {
+      throw Exception('Account with ID $id not found.');
     }
   }
 
-  void transfer(int fromAccountId, int toAccountId, double amount) {
-    try {
-      if (_accounts.containsKey(fromAccountId) &&
-          _accounts.containsKey(toAccountId)) {
-        if (_accounts[fromAccountId]!.balance >= amount) {
-          _accounts[fromAccountId]!.balance -= amount;
-          _accounts[toAccountId]!.balance += amount;
-        } else {
-          throw Exception('Insufficient balance.');
-        }
+  void withdraw(int id, double amount) {
+    if (accounts.containsKey(id)) {
+      if (accounts[id]!.balance >= amount) {
+        accounts[id]!.balance -= amount;
+        print('Withdrew \$${amount.toStringAsFixed(2)} from account ID $id.');
       } else {
-        throw Exception('Invalid account IDs.');
+        throw Exception('Insufficient balance in account ID $id.');
       }
-    } catch (e) {
-      print('Error transferring: $e');
+    } else {
+      throw Exception('Account with ID $id not found.');
+    }
+  }
+
+  void transfer(int fromId, int toId, double amount) {
+    if (accounts.containsKey(fromId) && accounts.containsKey(toId)) {
+      if (accounts[fromId]!.balance >= amount) {
+        accounts[fromId]!.balance -= amount;
+        accounts[toId]!.balance += amount;
+        print('Transferred \$${amount.toStringAsFixed(2)} from account ID $fromId to account ID $toId.');
+      } else {
+        throw Exception('Insufficient balance in account ID $fromId.');
+      }
+    } else {
+      throw Exception('Invalid account ID(s) provided.');
     }
   }
 }
 
-// Example usage
 void main() {
-  Bank bank = Bank();
+  try {
+    Bank bank = Bank();
 
-  // Create accounts
-  Account account1 = bank.createAccount('Alice');
-  Account account2 = bank.createAccount('Bob');
+    Account account1 = Account(1, 'Apurbo', 1000.0);
+    Account account2 = Account(2, 'Manik', 500.0);
 
-  // Deposit money
-  bank.deposit(account1.id, 1000.0);
-  bank.deposit(account2.id, 500.0);
+    bank.createAccount(account1);
+    bank.createAccount(account2);
 
-  // Withdraw money
-  bank.withdraw(account1.id, 200.0);
+    bank.deposit(1, 200.0);
+    bank.withdraw(2, 100.0);
+    bank.transfer(1, 2, 300.0);
 
-  // Transfer money
-  bank.transfer(account1.id, account2.id, 300.0);
-
-  // Print account balances
-  print('${account1.name} balance: \$${account1.balance}');
-  print('${account2.name} balance: \$${account2.balance}');
+    print('Account 1 Balance: \$${account1.balance.toStringAsFixed(2)}');
+    print('Account 2 Balance: \$${account2.balance.toStringAsFixed(2)}');
+  } catch (e) {
+    print('Error: $e');
+  }
 }

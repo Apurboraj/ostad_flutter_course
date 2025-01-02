@@ -33,9 +33,9 @@ class Quiz {
 
     _questions.addAll([
       Question(
-        questionText: 'What is the capital of France?',
-        options: ['Berlin', 'Madrid', 'Paris', 'Rome'],
-        correctOptionIndex: 2,
+        questionText: 'What is the capital of Bangladesh?',
+        options: ['Barishal', 'Dhaka', 'Khulna', 'Rajshahi'],
+        correctOptionIndex: 1,
         points: 10,
       ),
       Question(

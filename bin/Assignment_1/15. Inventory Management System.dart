@@ -1,83 +1,52 @@
-// Define the Product class
 class Product {
-  final int id;
-  final String name;
+  int id;
+  String name;
   int quantity;
-  final double price;
+  double price;
 
-  Product({required this.id, required this.name, required this.quantity, required this.price});
-
-  double get totalValue => quantity * price;
-
-  @override
-  String toString() => '$name (ID: $id): Quantity: $quantity, Price: \$${price.toStringAsFixed(2)}';
+  Product(this.id, this.name, this.quantity, this.price);
 }
 
-// Define the Inventory class
 class Inventory {
-  final Map<int, Product> _products = {};
+  Map<int, Product> products = {};
 
   void addProduct(Product product) {
-    if (_products.containsKey(product.id)) {
-      print('Product with ID ${product.id} already exists.');
-      return;
-    }
-    _products[product.id] = product;
-    print('Added product: ${product.name}');
-  }
-
-  void updateProductQuantity(int productId, int quantity) {
-    try {
-      final product = _products[productId];
-      if (product == null) {
-        throw Exception('Product with ID $productId does not exist.');
-      }
-      if (quantity < 0) {
-        throw Exception('Quantity cannot be negative.');
-      }
-      product.quantity = quantity;
-      print('Updated ${product.name} quantity to $quantity.');
-    } catch (e) {
-      print(e);
+    if (products.containsKey(product.id)) {
+      throw Exception('Product with ID ${product.id} already exists.');
+    } else {
+      products[product.id] = product;
+      print('Product "${product.name}" added to inventory.');
     }
   }
 
-  void calculateTotalValue() {
-    final totalValue = _products.values.fold(0.0, (sum, product) => sum + product.totalValue);
-    print('Total inventory value: \$${totalValue.toStringAsFixed(2)}');
+  void updateProductQuantity(int id, int quantity) {
+    if (products.containsKey(id)) {
+      products[id]!.quantity = quantity;
+      print('Product quantity updated for ID $id.');
+    } else {
+      throw Exception('Product with ID $id not found.');
+    }
   }
 
-  void listProducts() {
-    if (_products.isEmpty) {
-      print('No products in inventory.');
-      return;
-    }
-    print('Inventory Products:');
-    for (var product in _products.values) {
-      print('- $product');
-    }
+  double calculateTotalValue() {
+    return products.values.fold(0.0, (sum, product) => sum + (product.price * product.quantity));
   }
 }
 
 void main() {
-  final inventory = Inventory();
+  try {
+    Inventory inventory = Inventory();
 
-  // Add products to inventory
-  inventory.addProduct(
-      Product(id: 1, name: 'Laptop', quantity: 10, price: 999.99));
-  inventory.addProduct(
-      Product(id: 2, name: 'Smartphone', quantity: 50, price: 499.99));
-  inventory.addProduct(
-      Product(id: 3, name: 'Headphones', quantity: 30, price: 79.99));
+    Product product1 = Product(1, 'Laptop', 10, 999.99);
+    Product product2 = Product(2, 'Smartphone', 20, 499.99);
 
-  // List all products
-  inventory.listProducts();
+    inventory.addProduct(product1);
+    inventory.addProduct(product2);
 
-  // Update product quantity
-  inventory.updateProductQuantity(2, 45); // Update Smartphone quantity
-  inventory.updateProductQuantity(4, 20); // Non-existent product
-  inventory.updateProductQuantity(1, -5); // Invalid quantity
+    inventory.updateProductQuantity(1, 15);
 
-  // Calculate total inventory value
-  inventory.calculateTotalValue();
+    print('Total Inventory Value: \$${inventory.calculateTotalValue().toStringAsFixed(2)}');
+  } catch (e) {
+    print('Error: $e');
+  }
 }

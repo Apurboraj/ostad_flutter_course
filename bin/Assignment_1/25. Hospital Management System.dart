@@ -95,9 +95,9 @@ void main() {
   final hospital = Hospital();
 
   // Add doctors
-  hospital.addDoctor(Doctor(id: 1, name: 'Alice', specialty: 'Cardiology'));
-  hospital.addDoctor(Doctor(id: 2, name: 'Bob', specialty: 'Neurology'));
-  hospital.addDoctor(Doctor(id: 3, name: 'Charlie', specialty: 'Orthopedics'));
+  hospital.addDoctor(Doctor(id: 1, name: 'Apurbo', specialty: 'Cardiology'));
+  hospital.addDoctor(Doctor(id: 2, name: 'Manik', specialty: 'Neurology'));
+  hospital.addDoctor(Doctor(id: 3, name: 'Rohit', specialty: 'Orthopedics'));
 
   // Add patients and assign to doctors
   hospital.assignPatientToDoctor(Patient(id: 1, name: 'John', age: 45, disease: 'Heart Disease'), 'Cardiology');

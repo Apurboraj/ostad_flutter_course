@@ -77,16 +77,16 @@ class WeatherMonitor {
 void main() async {
   final weatherMonitor = WeatherMonitor();
 
-  weatherMonitor.addCity(City(name: 'London', temperature: 15.0, condition: 'Cloudy'));
-  weatherMonitor.addCity(City(name: 'New York', temperature: 22.0, condition: 'Sunny'));
-  weatherMonitor.addCity(City(name: 'Tokyo', temperature: 18.0, condition: 'Rainy'));
-  weatherMonitor.addCity(City(name: 'Sydney', temperature: 25.0, condition: 'Sunny'));
+  weatherMonitor.addCity(City(name: 'Dhaka', temperature: 19.0, condition: 'Cloudy'));
+  weatherMonitor.addCity(City(name: 'Rajshahi', temperature: 18.0, condition: 'Cloudy'));
+  weatherMonitor.addCity(City(name: 'Kolkata', temperature: 20.0, condition: 'Sunny'));
+  weatherMonitor.addCity(City(name: 'Khulna', temperature: 25.0, condition: 'Sunny'));
 
   weatherMonitor.displayCitiesByTemperature();
   weatherMonitor.displayCitiesByCondition('Sunny');
 
-  await weatherMonitor.updateWeather('London');
-  await weatherMonitor.updateWeather('Tokyo');
+  await weatherMonitor.updateWeather('Dhaka');
+  await weatherMonitor.updateWeather('Kolkata');
 
   weatherMonitor.displayCitiesByTemperature();
   weatherMonitor.displayCitiesByCondition('Rainy');

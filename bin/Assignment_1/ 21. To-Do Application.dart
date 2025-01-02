@@ -1,99 +1,67 @@
-// Define the Task class
+import 'dart:async';
+
 class Task {
-  final int id;
-  final String description;
+  int id;
+  String description;
   bool isCompleted;
 
-  Task({required this.id, required this.description, this.isCompleted = false});
-
-  void toggleCompletion() {
-    isCompleted = !isCompleted;
-  }
-
-  @override
-  String toString() => 'Task(ID: $id, Description: "$description", Completed: $isCompleted)';
+  Task(this.id, this.description, this.isCompleted);
 }
 
-// Define the ToDoList class
 class ToDoList {
-  final List<Task> _tasks = [];
+  List<Task> tasks = [];
 
-  void addTask(String description) {
-    final id = _tasks.length + 1;
-    _tasks.add(Task(id: id, description: description));
-    print('Task added: "$description"');
+  void addTask(Task task) {
+    tasks.add(task);
+    print('Task "${task.description}" added.');
   }
 
-  void markTaskAsCompleted(int taskId) {
-    try {
-      final task = _getTask(taskId);
-      if (!task.isCompleted) {
-        task.toggleCompletion();
-        print('Task $taskId marked as completed.');
-      } else {
-        print('Task $taskId is already completed.');
-      }
-    } catch (e) {
-      print(e);
-    }
+  void markTaskAsCompleted(int id) {
+    Task task = tasks.firstWhere((task) => task.id == id, orElse: () => throw Exception('Task not found'));
+    task.isCompleted = true;
+    print('Task "${task.description}" marked as completed.');
   }
 
   void listPendingTasks() {
-    final pendingTasks = _tasks.where((task) => !task.isCompleted).toList();
-    if (pendingTasks.isEmpty) {
-      print('No pending tasks.');
-    } else {
-      print('Pending Tasks:');
-      for (var task in pendingTasks) {
-        print('- $task');
-      }
-    }
+    tasks.where((task) => !task.isCompleted).forEach((task) {
+      print('ID: ${task.id}, Description: ${task.description}');
+    });
   }
 
-  void deleteTask(int taskId) {
-    try {
-      final task = _getTask(taskId);
-      _tasks.remove(task);
-      print('Task $taskId deleted.');
-    } catch (e) {
-      print(e);
-    }
+  void deleteTask(int id) {
+    Task task = tasks.firstWhere((task) => task.id == id, orElse: () => throw Exception('Task not found'));
+    tasks.remove(task);
+    print('Task "${task.description}" deleted.');
   }
 
   Future<void> saveTasksToFile() async {
     print('Saving tasks to file...');
-    await Future.delayed(Duration(seconds: 2)); // Simulate file saving delay
-    print('Tasks saved successfully!');
-  }
-
-  Task _getTask(int taskId) {
-    final task = _tasks.firstWhere(
-          (task) => task.id == taskId,
-      orElse: () => throw Exception('Task with ID $taskId not found.'),
-    );
-    return task;
+    await Future.delayed(Duration(seconds: 2)); // Simulate saving to file
+    print('Tasks saved to file.');
   }
 }
 
 void main() async {
-  final toDoList = ToDoList();
+  try {
+    ToDoList toDoList = ToDoList();
 
-  // Add tasks
-  toDoList.addTask('Buy groceries');
-  toDoList.addTask('Walk the dog');
+    Task task1 = Task(1, 'Buy groceries', false);
+    Task task2 = Task(2, 'Go to the gym', false);
+    Task task3 = Task(3, 'Complete assignment', false);
 
-  // List pending tasks
-  toDoList.listPendingTasks();
+    toDoList.addTask(task1);
+    toDoList.addTask(task2);
+    toDoList.addTask(task3);
 
-  // Mark a task as completed
-  toDoList.markTaskAsCompleted(1);
+    toDoList.markTaskAsCompleted(2);
 
-  // List pending tasks again
-  toDoList.listPendingTasks();
+    print('Pending Tasks:');
+    toDoList.listPendingTasks();
 
-  // Delete a task
-  toDoList.deleteTask(2);
+    toDoList.deleteTask(1);
 
-  // Save tasks to a file
-  await toDoList.saveTasksToFile();
+    await toDoList.saveTasksToFile();
+  } catch (e) {
+    print('Error: $e');
+  }
 }

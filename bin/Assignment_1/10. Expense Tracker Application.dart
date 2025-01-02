@@ -1,96 +1,60 @@
 import 'dart:async';
 
 class Transaction {
-  String id;
+  int id;
   String title;
   double amount;
   DateTime date;
   String category;
 
-  Transaction({
-    required this.id,
-    required this.title,
-    required this.amount,
-    required this.date,
-    required this.category,
-  });
+  Transaction(this.id, this.title, this.amount, this.date, this.category);
 }
 
 class Tracker {
-  List<Transaction> _transactions = [];
+  List<Transaction> transactions = [];
 
-  Future<void> addTransaction(Transaction transaction) async {
-    // Simulate fetching transaction data from a server
-    await Future.delayed(Duration(milliseconds: 500));
-    _transactions.add(transaction);
+  void addTransaction(Transaction transaction) {
+    transactions.add(transaction);
   }
 
-  List<Transaction> getTransactionsByCategory(String category) {
-    return _transactions.where((t) => t.category == category).toList();
+  void displayTransactionsByCategory(String category) {
+    transactions.where((transaction) => transaction.category == category).forEach((transaction) {
+      print('ID: ${transaction.id}, Title: ${transaction.title}, Amount: \$${transaction.amount}, Date: ${transaction.date}');
+    });
   }
 
-  double getTotalExpensesForMonth(int year, int month) {
-    return _transactions
-        .where((t) =>
-    t.date.year == year && t.date.month == month)
-        .map((t) => t.amount)
-        .reduce((value, element) => value + element);
-  }
-
-  List<Transaction> getTransactionsByDateRange(
-      DateTime startDate, DateTime endDate) {
-    return _transactions
-        .where((t) => t.date.isAfter(startDate) && t.date.isBefore(endDate))
-        .toList();
+  double calculateTotalExpensesForMonth(int year, int month) {
+    return transactions
+        .where((transaction) => transaction.date.year == year && transaction.date.month == month)
+        .fold(0.0, (sum, transaction) => sum + transaction.amount);
   }
 }
 
+Future<void> fetchHistoricalData() async {
+  print('Fetching historical transaction data...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate fetching data
+  print('Historical transaction data fetched.');
+}
+
 void main() async {
-  Tracker tracker = Tracker();
+  try {
+    Tracker tracker = Tracker();
 
-  // Add some sample transactions
-  await tracker.addTransaction(Transaction(
-      id: '1',
-      title: 'Lunch',
-      amount: 15.0,
-      date: DateTime(2024, 11, 15),
-      category: 'Food'));
-  await tracker.addTransaction(Transaction(
-      id: '2',
-      title: 'Bus Fare',
-      amount: 5.0,
-      date: DateTime(2024, 11, 16),
-      category: 'Transport'));
-  await tracker.addTransaction(Transaction(
-      id: '3',
-      title: 'Coffee',
-      amount: 3.0,
-      date: DateTime(2024, 11, 17),
-      category: 'Food'));
-  await tracker.addTransaction(Transaction(
-      id: '4',
-      title: 'Dinner',
-      amount: 20.0,
-      date: DateTime(2024, 11, 18),
-      category: 'Food'));
+    Transaction t1 = Transaction(1, 'Groceries', 50.0, DateTime(2025, 1, 1), 'Food');
+    Transaction t2 = Transaction(2, 'Bus Ticket', 2.5, DateTime(2025, 1, 2), 'Transport');
+    Transaction t3 = Transaction(3, 'Dinner', 30.0, DateTime(2025, 1, 3), 'Food');
 
-  // Get transactions by category
-  List<Transaction> foodTransactions =
-  tracker.getTransactionsByCategory('Food');
-  print('Food Transactions:');
-  for (var transaction in foodTransactions) {
-    print('${transaction.title}: \$${transaction.amount}');
-  }
+    tracker.addTransaction(t1);
+    tracker.addTransaction(t2);
+    tracker.addTransaction(t3);
 
-  // Calculate total expenses for November 2024
-  double totalExpenses = tracker.getTotalExpensesForMonth(2024, 11);
-  print('Total Expenses for November 2024: \$${totalExpenses}');
+    await fetchHistoricalData();
 
-  // Get transactions by date range
-  List<Transaction> transactionsInRange = tracker.getTransactionsByDateRange(
-      DateTime(2024, 11, 16), DateTime(2024, 11, 18));
-  print('Transactions from 16th to 18th November:');
-  for (var transaction in transactionsInRange) {
-    print('${transaction.title}: \$${transaction.amount}');
+    print('Transactions by Category (Food):');
+    tracker.displayTransactionsByCategory('Food');
+
+    print('Total Expenses for January 2025: \$${tracker.calculateTotalExpensesForMonth(2025, 1)}');
+  } catch (e) {
+    print('Error: $e');
   }
 }

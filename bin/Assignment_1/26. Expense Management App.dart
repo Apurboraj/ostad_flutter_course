@@ -1,83 +1,68 @@
 import 'dart:async';
 
 class Expense {
-  final int id;
-  final String category;
-  final double amount;
-  final DateTime date;
+  int id;
+  String category;
+  double amount;
+  DateTime date;
 
-  Expense({
-    required this.id,
-    required this.category,
-    required this.amount,
-    required this.date,
-  });
+  Expense(this.id, this.category, this.amount, this.date);
 }
 
 class ExpenseManager {
-  List<Expense> _expenses = [];
-  int _nextExpenseId = 1;
+  List<Expense> expenses = [];
+  Map<String, List<Expense>> expensesByCategory = {};
 
-  Future<void> addExpense(String category, double amount) async {
-    // Simulate fetching current date (replace with actual date/time library)
-    DateTime now = DateTime.now();
-
-    // Create Expense object
-    Expense expense = Expense(
-      id: _nextExpenseId++,
-      category: category,
-      amount: amount,
-      date: now,
-    );
-
-    // Simulate adding expense to database
-    await Future.delayed(Duration(milliseconds: 500)); // Simulate database operation
-    _expenses.add(expense);
+  void addExpense(Expense expense) {
+    expenses.add(expense);
+    if (!expensesByCategory.containsKey(expense.category)) {
+      expensesByCategory[expense.category] = [];
+    }
+    expensesByCategory[expense.category]!.add(expense);
+    print('Expense added: ${expense.category}, \$${expense.amount}, ${expense.date}');
   }
 
-  Map<String, List<Expense>> groupExpensesByCategory() {
-    Map<String, List<Expense>> groupedExpenses = {};
-    for (var expense in _expenses) {
-      if (!groupedExpenses.containsKey(expense.category)) {
-        groupedExpenses[expense.category] = [];
-      }
-      groupedExpenses[expense.category]!.add(expense);
-    }
-    return groupedExpenses;
+  void groupExpensesByCategory() {
+    expensesByCategory.forEach((category, expenses) {
+      print('Category: $category');
+      expenses.forEach((expense) {
+        print('ID: ${expense.id}, Amount: \$${expense.amount}, Date: ${expense.date}');
+      });
+    });
   }
 
   double calculateTotalExpensesForMonth(int year, int month) {
-    return _expenses
-        .where((expense) =>
-    expense.date.year == year && expense.date.month == month)
-        .fold<double>(0, (previousValue, element) => previousValue + element.amount);
+    return expenses
+        .where((expense) => expense.date.year == year && expense.date.month == month)
+        .fold(0.0, (sum, expense) => sum + expense.amount);
+  }
+
+  Future<void> fetchExpensesFromDatabase() async {
+    print('Fetching expenses from database...');
+    await Future.delayed(Duration(seconds: 2)); // Simulate fetching data
+    print('Expenses fetched from database.');
   }
 }
 
-// Example usage
 void main() async {
-  ExpenseManager expenseManager = ExpenseManager();
+  try {
+    ExpenseManager expenseManager = ExpenseManager();
 
-  // Add expenses
-  await expenseManager.addExpense('Food', 50.0);
-  await expenseManager.addExpense('Transportation', 20.0);
-  await expenseManager.addExpense('Entertainment', 30.0);
-  await expenseManager.addExpense('Food', 40.0);
+    Expense expense1 = Expense(1, 'Food', 50.0, DateTime(2025, 1, 1));
+    Expense expense2 = Expense(2, 'Transport', 20.0, DateTime(2025, 1, 2));
+    Expense expense3 = Expense(3, 'Entertainment', 100.0, DateTime(2025, 1, 3));
 
-  // Group expenses by category
-  Map<String, List<Expense>> groupedExpenses =
-  expenseManager.groupExpensesByCategory();
-  print('Expenses by Category:');
-  groupedExpenses.forEach((category, expenses) {
-    print('$category:');
-    for (var expense in expenses) {
-      print(' - \$${expense.amount}');
-    }
-  });
+    expenseManager.addExpense(expense1);
+    expenseManager.addExpense(expense2);
+    expenseManager.addExpense(expense3);
 
-  // Calculate total expenses for the current month
-  DateTime now = DateTime.now();
-  double totalExpenses =
-  expenseManager.calculateTotalExpensesForMonth(now.year, now.month);
-  print('Total Expenses for ${now.month}/${now.year}: \$${totalExpenses}');
+    await expenseManager.fetchExpensesFromDatabase();
+
+    print('Expenses grouped by category:');
+    expenseManager.groupExpensesByCategory();
+
+    print('Total expenses for January 2025: \$${expenseManager.calculateTotalExpensesForMonth(2025, 1).toStringAsFixed(2)}');
+  } catch (e) {
+    print('Error: $e');
+  }
 }

@@ -1,126 +1,61 @@
 import 'dart:collection';
-import 'dart:core';
 
-// Enum for task status
-enum TaskStatus { pending, inProgress, completed }
-
-// Task class
 class Task {
-  final int id;
+  int id;
   String title;
   String description;
-  TaskStatus status;
+  String status;
   DateTime dueDate;
 
-  Task({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.dueDate,
-  });
-
-  @override
-  String toString() {
-    return 'Task{id: $id, title: "$title", description: "$description", status: ${status.name}, dueDate: $dueDate}';
-  }
+  Task(this.id, this.title, this.description, this.status, this.dueDate);
 }
 
-// TaskManager class
 class TaskManager {
-  final List<Task> _tasks = [];
+  List<Task> tasks = [];
 
-  // Add a new task
   void addTask(Task task) {
-    _tasks.add(task);
-    print('Task added: ${task.title}');
+    tasks.add(task);
   }
 
-  // Update task status
-  void updateTaskStatus(int taskId, TaskStatus newStatus) {
-    try {
-      final task = _tasks.firstWhere((task) => task.id == taskId);
-      task.status = newStatus;
-      print('Task updated: ${task.title} is now ${task.status.name}');
-    } catch (e) {
-      print('Error: Task with id $taskId not found.');
-    }
+  void updateTaskStatus(int id, String newStatus) {
+    Task task = tasks.firstWhere((task) => task.id == id, orElse: () => throw Exception('Task not found'));
+    task.status = newStatus;
   }
 
-  // List tasks grouped by status
-  Map<TaskStatus, List<Task>> listTasksByStatus() {
-    final Map<TaskStatus, List<Task>> groupedTasks = {
-      TaskStatus.pending: [],
-      TaskStatus.inProgress: [],
-      TaskStatus.completed: [],
-    };
-    for (var task in _tasks) {
-      groupedTasks[task.status]?.add(task);
-    }
-    return groupedTasks;
+  List<Task> listTasksByStatus(String status) {
+    return tasks.where((task) => task.status == status).toList();
   }
 
-  // Show overdue tasks
-  List<Task> getOverdueTasks() {
-    final now = DateTime.now();
-    return _tasks.where((task) => task.dueDate.isBefore(now) && task.status != TaskStatus.completed).toList();
-  }
-
-  // Print tasks grouped by status
-  void printTasksByStatus() {
-    final groupedTasks = listTasksByStatus();
-    groupedTasks.forEach((status, tasks) {
-      print('\n${status.name.toUpperCase()} Tasks:');
-      tasks.forEach((task) => print(task));
-    });
-  }
-
-  // Print overdue tasks
-  void printOverdueTasks() {
-    final overdueTasks = getOverdueTasks();
-    print('\nOVERDUE Tasks:');
-    if (overdueTasks.isEmpty) {
-      print('No overdue tasks.');
-    } else {
-      overdueTasks.forEach((task) => print(task));
-    }
+  List<Task> showOverdueTasks() {
+    DateTime now = DateTime.now();
+    return tasks.where((task) => task.dueDate.isBefore(now) && task.status != 'Completed').toList();
   }
 }
 
 void main() {
-  final taskManager = TaskManager();
+  try {
+    TaskManager manager = TaskManager();
 
-  // Adding tasks
-  taskManager.addTask(Task(
-    id: 1,
-    title: 'Task 1',
-    description: 'Description for task 1',
-    status: TaskStatus.pending,
-    dueDate: DateTime.now().add(Duration(days: 1)),
-  ));
+    Task task1 = Task(1, 'Task 1', 'Description 1', 'Pending', DateTime(2025, 1, 1));
+    Task task2 = Task(2, 'Task 2', 'Description 2', 'In Progress', DateTime(2025, 1, 2));
+    Task task3 = Task(3, 'Task 3', 'Description 3', 'Completed', DateTime(2025, 1, 3));
 
-  taskManager.addTask(Task(
-    id: 2,
-    title: 'Task 2',
-    description: 'Description for task 2',
-    status: TaskStatus.inProgress,
-    dueDate: DateTime.now().subtract(Duration(days: 1)),
-  ));
+    manager.addTask(task1);
+    manager.addTask(task2);
+    manager.addTask(task3);
 
-  taskManager.addTask(Task(
-    id: 3,
-    title: 'Task 3',
-    description: 'Description for task 3',
-    status: TaskStatus.completed,
-    dueDate: DateTime.now().subtract(Duration(days: 2)),
-  ));
+    manager.updateTaskStatus(1, 'In Progress');
 
-  // Updating task status
-  taskManager.updateTaskStatus(1, TaskStatus.inProgress);
+    print('Tasks by Status (In Progress):');
+    manager.listTasksByStatus('In Progress').forEach((task) {
+      print('ID: ${task.id}, Title: ${task.title}, Status: ${task.status}');
+    });
 
-  // Listing tasks grouped by status
-  taskManager.printTasksByStatus();
-
-  // Showing overdue tasks
-  taskManager.printOverdueTasks();
+    print('Overdue Tasks:');
+    manager.showOverdueTasks().forEach((task) {
+      print('ID: ${task.id}, Title: ${task.title}, Due Date: ${task.dueDate}');
+    });
+  } catch (e) {
+    print('Error: $e');
+  }
 }

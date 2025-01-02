@@ -6,88 +6,71 @@ class Trip {
   int availableSeats;
   DateTime departureDate;
 
-  Trip(
-      {required this.destination,
-        required this.price,
-        required this.availableSeats,
-        required this.departureDate});
+  Trip(this.destination, this.price, this.availableSeats, this.departureDate);
 }
 
 class Booking {
-  Map<String, List<Trip>> _userBookings = {};
+  Map<int, Trip> userBookings = {};
 
-  Future<void> bookTrip(String userId, Trip trip) async {
-    // Simulate fetching trip data from a database
-    await Future.delayed(Duration(seconds: 1));
-
+  void bookTrip(int userId, Trip trip) {
     if (trip.availableSeats > 0) {
-      if (_userBookings.containsKey(userId)) {
-        _userBookings[userId]!.add(trip);
-      } else {
-        _userBookings[userId] = [trip];
-      }
+      userBookings[userId] = trip;
       trip.availableSeats--;
-      print('Trip booked successfully!');
+      print('Booking successful for ${trip.destination}.');
     } else {
-      print('Trip is fully booked.');
+      throw Exception('No available seats for ${trip.destination}.');
     }
   }
 
-  Future<void> cancelTrip(String userId, Trip trip) async {
-    // Simulate updating database
-    await Future.delayed(Duration(seconds: 1));
-
-    if (_userBookings.containsKey(userId) &&
-        _userBookings[userId]!.contains(trip)) {
-      _userBookings[userId]!.remove(trip);
+  void cancelBooking(int userId) {
+    if (userBookings.containsKey(userId)) {
+      Trip trip = userBookings[userId]!;
       trip.availableSeats++;
-      print('Trip canceled successfully!');
+      userBookings.remove(userId);
+      print('Booking canceled for ${trip.destination}.');
     } else {
-      print('No such booking found.');
+      throw Exception('No booking found for user ID: $userId.');
     }
   }
 
-  void displayTripDetails(String userId) {
-    if (_userBookings.containsKey(userId)) {
-      print('Your booked trips:');
-      for (var trip in _userBookings[userId]!) {
-        print(
-            'Destination: ${trip.destination}, Price: \$${trip.price}, Departure Date: ${trip.departureDate}');
-      }
-    } else {
-      print('You have no booked trips.');
-    }
+  void displayTripDetails(Trip trip) {
+    print('Destination: ${trip.destination}');
+    print('Price: \$${trip.price}');
+    print('Available Seats: ${trip.availableSeats}');
+    print('Departure Date: ${trip.departureDate}');
   }
 }
 
+Future<void> fetchTripData() async {
+  print('Fetching trip data...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate fetching data
+  print('Trip data fetched.');
+}
+
+Future<void> validateBooking(Booking booking, int userId, Trip trip) async {
+  print('Validating booking...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate validation
+  booking.bookTrip(userId, trip);
+}
+
 void main() async {
-  // Sample trips
-  List<Trip> trips = [
-    Trip(
-        destination: 'New York',
-        price: 500.0,
-        availableSeats: 5,
-        departureDate: DateTime(2024, 12, 31)),
-    Trip(
-        destination: 'Paris',
-        price: 800.0,
-        availableSeats: 3,
-        departureDate: DateTime(2025, 01, 15)),
-    Trip(
-        destination: 'Tokyo',
-        price: 1200.0,
-        availableSeats: 2,
-        departureDate: DateTime(2025, 02, 20)),
-  ];
+  try {
+    Trip trip1 = Trip('Paris', 1000.0, 5, DateTime(2025, 6, 15));
+    Trip trip2 = Trip('Tokyo', 1500.0, 3, DateTime(2025, 7, 20));
 
-  Booking bookingSystem = Booking();
+    Booking booking = Booking();
 
-  // Book a trip
-  await bookingSystem.bookTrip('user1', trips[0]);
+    await fetchTripData();
 
-  // Cancel a trip
-  await bookingSystem.cancelTrip('user1', trips[0]);
+    await validateBooking(booking, 1, trip1);
+    await validateBooking(booking, 2, trip2);
 
-  // Display booked trips
-  bookingSystem.displayTripDetails('user1');
+    booking.displayTripDetails(trip1);
+    booking.displayTripDetails(trip2);
+
+    booking.cancelBooking(1);
+    booking.displayTripDetails(trip1);
+  } catch (e) {
+    print('Error: $e');
+  }
 }

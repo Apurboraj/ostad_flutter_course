@@ -1,90 +1,59 @@
 import 'dart:async';
 
 class Course {
-  final int id;
-  final String title;
-  final String description;
-  final double price;
+  int id;
+  String title;
+  String description;
+  double price;
 
-  Course({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.price,
-  });
+  Course(this.id, this.title, this.description, this.price);
 }
 
 class Student {
-  late final String  name;
-  Set<Course> _enrolledCourses = {};
+  int id;
+  String name;
+  Set<Course> enrolledCourses = {};
 
-  Student(String s);
+  Student(this.id, this.name);
 
   void enrollInCourse(Course course) {
-    _enrolledCourses.add(course);
+    enrolledCourses.add(course);
+    print('Enrolled in course: ${course.title}');
   }
 
-  Set<Course> getEnrolledCourses() {
-    return _enrolledCourses;
+  void viewEnrolledCourses() {
+    print('Enrolled Courses:');
+    enrolledCourses.forEach((course) {
+      print('Course ID: ${course.id}, Title: ${course.title}, Price: \$${course.price}');
+    });
   }
 
   double calculateTotalCost() {
-    double totalCost = 0;
-    for (var course in _enrolledCourses) {
-      totalCost += course.price;
-    }
-    return totalCost;
-  }
-
-  Future<bool> confirmCoursePurchase(Course course) async {
-    // Simulate payment processing and confirmation
-    await Future.delayed(Duration(seconds: 2)); // Simulate processing time
-    // In a real-world scenario, this would involve interacting with a payment gateway
-    print('Processing payment for ${course.title}...');
-    // Simulate successful payment
-    return true;
+    return enrolledCourses.fold(0.0, (sum, course) => sum + course.price);
   }
 }
 
-// Example usage
+Future<void> confirmCoursePurchase() async {
+  print('Confirming course purchase...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate purchase confirmation
+  print('Course purchase confirmed.');
+}
+
 void main() async {
-  // Create sample courses
-  Course course1 = Course(
-    id: 1,
-    title: 'Introduction to Programming',
-    description: 'Learn the fundamentals of programming',
-    price: 99.99,
-  );
-  Course course2 = Course(
-    id: 2,
-    title: 'Data Science with Python',
-    description: 'Learn data science using Python',
-    price: 149.99,
-  );
+  try {
+    Course course1 = Course(1, 'Dart Programming', 'Learn the basics of Dart.', 99.99);
+    Course course2 = Course(2, 'Flutter Development', 'Build beautiful mobile apps with Flutter.', 199.99);
 
-  // Create a student
-  Student student = Student('Alice');
+    Student student = Student(1, 'Alice');
 
-  // Enroll in courses
-  student.enrollInCourse(course1);
-  student.enrollInCourse(course2);
+    student.enrollInCourse(course1);
+    student.enrollInCourse(course2);
 
-  // View enrolled courses
-  Set<Course> enrolledCourses = student.getEnrolledCourses();
-  print('Enrolled Courses:');
-  for (var course in enrolledCourses) {
-    print('${course.title} - \$${course.price}');
-  }
+    await confirmCoursePurchase();
 
-  // Calculate total cost
-  double totalCost = student.calculateTotalCost();
-  print('Total Cost: \$${totalCost.toStringAsFixed(2)}');
-
-  // Confirm course purchase (simulate)
-  bool isPurchased = await student.confirmCoursePurchase(course1);
-  if (isPurchased) {
-    print('Course purchased successfully!');
-  } else {
-    print('Course purchase failed.');
+    student.viewEnrolledCourses();
+    print('Total Cost: \$${student.calculateTotalCost().toStringAsFixed(2)}');
+  } catch (e) {
+    print('Error: $e');
   }
 }

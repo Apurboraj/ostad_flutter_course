@@ -1,120 +1,53 @@
-// Define the Movie class
 class Movie {
-  final int id;
-  final String title;
+  int id;
+  String title;
   int availableSeats;
-  final DateTime showTime;
+  DateTime showTime;
 
-  Movie({required this.id, required this.title, required this.availableSeats, required this.showTime});
-
-  @override
-  String toString() => 'Movie: $title (ID: $id), Seats Available: $availableSeats, ShowTime: ${showTime.toLocal()}';
+  Movie(this.id, this.title, this.availableSeats, this.showTime);
 }
 
-// Define the Booking class
 class Booking {
-  final String userName;
-  final Movie movie;
-  final int seatsBooked;
+  Map<int, List<String>> userBookings = {};
 
-  Booking({required this.userName, required this.movie, required this.seatsBooked});
-
-  @override
-  String toString() => 'Booking for $userName: $seatsBooked seats for "${movie.title}"';
-}
-
-// Define the MovieBookingSystem class
-class MovieBookingSystem {
-  final List<Movie> _movies = [];
-  final Map<String, List<Booking>> _bookings = {}; // UserName -> List of Bookings
-
-  void addMovie(Movie movie) {
-    _movies.add(movie);
-    print('Added movie: ${movie.title}');
-  }
-
-  void listMovies() {
-    if (_movies.isEmpty) {
-      print('No movies available.');
-      return;
-    }
-
-    print('Available Movies:');
-    for (var movie in _movies) {
-      print('- $movie');
-    }
-  }
-
-  void bookTickets(String userName, int movieId, int seats) {
-    try {
-      final movie = _movies.firstWhere(
-            (m) => m.id == movieId,
-        orElse: () => throw Exception('Movie with ID $movieId not found.'),
-      );
-
-      if (seats <= 0) {
-        throw Exception('Invalid number of seats: $seats.');
-      }
-
-      if (movie.availableSeats < seats) {
-        throw Exception('Not enough seats available for "${movie.title}".');
-      }
-
-      movie.availableSeats -= seats;
-      final booking = Booking(userName: userName, movie: movie, seatsBooked: seats);
-
-      if (_bookings.containsKey(userName)) {
-        _bookings[userName]!.add(booking);
+  void bookTicket(int userId, Movie movie) {
+    if (movie.availableSeats > 0) {
+      movie.availableSeats--;
+      if (userBookings.containsKey(userId)) {
+        userBookings[userId]!.add(movie.title);
       } else {
-        _bookings[userName] = [booking];
+        userBookings[userId] = [movie.title];
       }
-
-      print('Successfully booked $seats seats for "${movie.title}" for user $userName.');
-    } catch (e) {
-      print(e);
+      print('Ticket booked for ${movie.title}.');
+    } else {
+      throw Exception('No available seats for ${movie.title}.');
     }
   }
 
-  void displayBookings(String userName) {
-    final userBookings = _bookings[userName];
-    if (userBookings == null || userBookings.isEmpty) {
-      print('No bookings found for user $userName.');
-      return;
-    }
-
-    print('Bookings for $userName:');
-    for (var booking in userBookings) {
-      print('- $booking');
+  void displayBookingDetails(int userId) {
+    if (userBookings.containsKey(userId)) {
+      print('Booking details for user $userId:');
+      userBookings[userId]!.forEach((title) {
+        print('Movie: $title');
+      });
+    } else {
+      throw Exception('No bookings found for user $userId.');
     }
   }
 }
 
 void main() {
-  final system = MovieBookingSystem();
+  try {
+    Movie movie1 = Movie(1, 'Inception', 5, DateTime(2025, 1, 1, 19, 0));
+    Movie movie2 = Movie(2, 'Interstellar', 3, DateTime(2025, 1, 2, 20, 0));
 
-  // Add movies
-  system.addMovie(Movie(
-    id: 1,
-    title: 'Inception',
-    availableSeats: 50,
-    showTime: DateTime.now().add(Duration(hours: 5)),
-  ));
-  system.addMovie(Movie(
-    id: 2,
-    title: 'The Matrix',
-    availableSeats: 30,
-    showTime: DateTime.now().add(Duration(hours: 3)),
-  ));
+    Booking booking = Booking();
 
-  // List movies
-  system.listMovies();
+    booking.bookTicket(1, movie1);
+    booking.bookTicket(1, movie2);
 
-  // Book tickets
-  system.bookTickets('Alice', 1, 3); // Successful booking
-  system.bookTickets('Bob', 1, 60); // Not enough seats
-  system.bookTickets('Alice', 3, 2); // Movie not found
-
-  // Display bookings
-  system.displayBookings('Alice');
-  system.displayBookings('Bob');
+    booking.displayBookingDetails(1);
+  } catch (e) {
+    print('Error: $e');
+  }
 }

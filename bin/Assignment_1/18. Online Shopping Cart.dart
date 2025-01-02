@@ -1,98 +1,70 @@
-// Define the Product class
 class Product {
-  final int id;
-  final String name;
-  final double price;
+  int id;
+  String name;
+  double price;
   int quantity;
 
-  Product({required this.id, required this.name, required this.price, required this.quantity});
-
-  double get totalPrice => price * quantity;
-
-  @override
-  String toString() => '$name (ID: $id): \$${price.toStringAsFixed(2)} x $quantity';
+  Product(this.id, this.name, this.price, this.quantity);
 }
 
-// Define the Cart class
 class Cart {
-  final List<Product> _products = [];
-  double _discount = 0.0;
+  List<Product> products = [];
+  double discount = 0.0;
 
   void addProduct(Product product) {
-    final existingProduct = _products.firstWhere(
-          (p) => p.id == product.id,
-      orElse: () => Product(id: product.id, name: product.name, price: product.price, quantity: 0),
-    );
-
-    if (existingProduct.quantity == 0) {
-      _products.add(product);
-    } else {
-      existingProduct.quantity += product.quantity;
-    }
-
-    print('Added ${product.quantity} of ${product.name} to the cart.');
+    products.add(product);
+    print('${product.name} added to the cart.');
   }
 
-  void removeProduct(int productId) {
-    final productIndex = _products.indexWhere((p) => p.id == productId);
-    if (productIndex != -1) {
-      final removedProduct = _products.removeAt(productIndex);
-      print('Removed ${removedProduct.name} from the cart.');
+  void removeProduct(Product product) {
+    if (products.contains(product)) {
+      products.remove(product);
+      print('${product.name} removed from the cart.');
     } else {
-      print('Product with ID $productId not found in the cart.');
+      throw Exception('${product.name} is not in the cart.');
     }
+  }
+
+  double calculateTotalPrice() {
+    double totalPrice = products.fold(0.0, (sum, product) => sum + (product.price * product.quantity));
+    return totalPrice * (1 - discount);
   }
 
   void applyDiscountCode(String code) {
-    try {
-      if (code == 'SAVE10') {
-        _discount = 0.10;
-        print('Discount code applied: 10% off.');
-      } else {
-        throw Exception('Invalid discount code: $code.');
-      }
-    } catch (e) {
-      print(e);
+    if (code == 'SAVE10') {
+      discount = 0.10;
+      print('Discount code applied: 10% off.');
+    } else {
+      throw Exception('Invalid discount code.');
     }
   }
 
-  double calculateTotal() {
-    final total = _products.fold(0.0, (sum, product) => sum + product.totalPrice);
-    final discountedTotal = total * (1 - _discount);
-    print('Total Price: \$${discountedTotal.toStringAsFixed(2)}');
-    return discountedTotal;
-  }
-
-  void displayCart() {
-    if (_products.isEmpty) {
-      print('Your cart is empty.');
-      return;
-    }
-
-    print('Cart Contents:');
-    for (var product in _products) {
-      print('- $product');
-    }
+  void displayCartSummary() {
+    print('Cart Summary:');
+    products.forEach((product) {
+      print('Item: ${product.name}, Price: \$${product.price}, Quantity: ${product.quantity}');
+    });
+    print('Total Price: \$${calculateTotalPrice().toStringAsFixed(2)}');
   }
 }
 
 void main() {
-  final cart = Cart();
+  try {
+    Cart cart = Cart();
 
-  // Add products to the cart
-  cart.addProduct(Product(id: 1, name: 'Laptop', price: 999.99, quantity: 1));
-  cart.addProduct(Product(id: 2, name: 'Mouse', price: 49.99, quantity: 2));
+    Product product1 = Product(1, 'Laptop', 999.99, 1);
+    Product product2 = Product(2, 'Smartphone', 499.99, 2);
 
-  // Display cart contents
-  cart.displayCart();
+    cart.addProduct(product1);
+    cart.addProduct(product2);
 
-  // Remove a product
-  cart.removeProduct(2);
+    cart.applyDiscountCode('SAVE10');
 
-  // Apply a discount code
-  cart.applyDiscountCode('SAVE10');
-  cart.applyDiscountCode('INVALIDCODE'); // Invalid code
+    cart.displayCartSummary();
 
-  // Calculate total price
-  cart.calculateTotal();
+    cart.removeProduct(product1);
+    cart.displayCartSummary();
+  } catch (e) {
+    print('Error: $e');
+  }
 }

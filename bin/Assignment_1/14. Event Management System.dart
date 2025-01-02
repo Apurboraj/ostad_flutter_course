@@ -1,109 +1,66 @@
-// Define the Event class
 import 'dart:async';
 
 class Event {
-  final int id;
-  final String name;
-  final DateTime date;
-  final String location;
-  final Set<String> participants;
+  int id;
+  String name;
+  DateTime date;
+  String location;
+  Set<String> participants;
 
-  Event({
-    required this.id,
-    required this.name,
-    required this.date,
-    required this.location,
-    Set<String>? participants,
-  }) : participants = participants ?? {};
-
-  @override
-  String toString() {
-    return 'Event: $name (ID: $id)\nDate: ${date.toLocal()}\nLocation: $location\nParticipants: ${participants.join(", ")}';
-  }
+  Event(this.id, this.name, this.date, this.location) : participants = {};
 }
 
-// Define the EventManager class
 class EventManager {
-  final List<Event> _events = [];
+  List<Event> events = [];
 
   void createEvent(Event event) {
-    _events.add(event);
-    print('Event created: ${event.name}');
+    events.add(event);
+    print('Event "${event.name}" created.');
   }
 
   void addParticipant(int eventId, String participant) {
-    final event = _events.firstWhere(
-          (e) => e.id == eventId,
-      orElse: () => throw Exception('Event with ID $eventId not found.'),
-    );
-
-    if (event.participants.add(participant)) {
-      print('Added participant "$participant" to event "${event.name}".');
+    Event event = events.firstWhere((event) => event.id == eventId, orElse: () => throw Exception('Event not found'));
+    if (event.participants.contains(participant)) {
+      throw Exception('Participant already added.');
     } else {
-      print('Participant "$participant" is already registered for the event "${event.name}".');
+      event.participants.add(participant);
+      print('Participant "$participant" added to event "${event.name}".');
     }
   }
 
   void listUpcomingEvents() {
-    final now = DateTime.now();
-    final upcomingEvents = _events.where((e) => e.date.isAfter(now)).toList();
-
-    if (upcomingEvents.isEmpty) {
-      print('No upcoming events.');
-      return;
-    }
-
-    print('Upcoming Events:');
-    for (var event in upcomingEvents) {
-      print(event);
-    }
-  }
-
-  Future<void> sendNotifications(int eventId) async {
-    final event = _events.firstWhere(
-          (e) => e.id == eventId,
-      orElse: () => throw Exception('Event with ID $eventId not found.'),
-    );
-
-    print('Sending notifications for event: ${event.name}...');
-    await Future.delayed(Duration(seconds: 2)); // Simulate notification delay
-    for (var participant in event.participants) {
-      print('Notification sent to $participant for event "${event.name}".');
-    }
+    DateTime now = DateTime.now();
+    events.where((event) => event.date.isAfter(now)).forEach((event) {
+      print('Event: ${event.name}, Date: ${event.date}, Location: ${event.location}');
+    });
   }
 }
 
+Future<void> sendNotification(String participant, String eventName) async {
+  print('Sending notification to $participant about event $eventName...');
+  await Future.delayed(Duration(seconds: 2)); // Simulate sending notification
+  print('Notification sent to $participant.');
+}
+
 void main() async {
-  final eventManager = EventManager();
+  try {
+    EventManager eventManager = EventManager();
 
-  // Create events
-  eventManager.createEvent(Event(
-    id: 1,
-    name: 'Tech Conference',
-    date: DateTime.now().add(Duration(days: 10)),
-    location: 'Convention Center',
-  ));
-  eventManager.createEvent(Event(
-    id: 2,
-    name: 'Music Festival',
-    date: DateTime.now().add(Duration(days: 5)),
-    location: 'City Park',
-  ));
-  eventManager.createEvent(Event(
-    id: 3,
-    name: 'Past Event',
-    date: DateTime.now().subtract(Duration(days: 2)),
-    location: 'Old Venue',
-  ));
+    Event event1 = Event(1, 'Tech Conference', DateTime(2025, 1, 15), 'Dhaka');
+    Event event2 = Event(2, 'Music Festival', DateTime(2025, 2, 20), 'Gazipur');
 
-  // Add participants
-  eventManager.addParticipant(1, 'Alice');
-  eventManager.addParticipant(1, 'Bob');
-  eventManager.addParticipant(1, 'Alice'); // Duplicate participant
+    eventManager.createEvent(event1);
+    eventManager.createEvent(event2);
 
-  // List upcoming events
-  eventManager.listUpcomingEvents();
+    eventManager.addParticipant(1, 'Apurbo');
+    eventManager.addParticipant(1, 'Arnob');
 
-  // Send notifications for a specific event
-  await eventManager.sendNotifications(1);
+    await sendNotification('Apurbo', 'Tech Conference');
+    await sendNotification('Arnob', 'Tech Conference');
+
+    print('Upcoming Events:');
+    eventManager.listUpcomingEvents();
+  } catch (e) {
+    print('Error: $e');
+  }
 }
